@@ -3,4 +3,6 @@
 *.pth
 
 *.csv
+*.txt
+
 cover
