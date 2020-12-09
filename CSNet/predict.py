@@ -65,7 +65,7 @@ def main(args):
             os.makedirs(savedir)
 
         o_mask = F.to_pil_image(o_mask)
-        o_mask.save(os.path.join(savedir, name + '.png'))
+        o_mask.save(os.path.join(savedir, name + '.jpg'))
 
 
 if __name__ == "__main__":

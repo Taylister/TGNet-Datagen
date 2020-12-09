@@ -105,10 +105,15 @@ else
           "${OUTPUT_DIRPATH}/raw_mask" \
           "${CSNet_DIRPATH}/weight/CSNet_weight.pth"
 
-  cd ../../
+  cd ..
 
 fi
 
 ############################################################################################
 # Generate mask of character region of title part image  
 ############################################################################################
+
+ python3 image_processing.py \
+          "${OUTPUT_DIRPATH}/raw_mask" \
+          "${OUTPUT_DIRPATH}/title" \
+          "${OUTPUT_DIRPATH}"
