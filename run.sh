@@ -90,6 +90,8 @@ else
 
 fi
 
+echo "----------"
+
 ############################################################################################
 # Generate mask of character region of title part image  
 ############################################################################################
@@ -109,11 +111,22 @@ else
 
 fi
 
+echo "----------"
+
+
 ############################################################################################
 # Generate mask of character region of title part image  
 ############################################################################################
 
- python3 image_processing.py \
+if [ -e ${OUTPUT_DIRPATH}/extracted_title ]; then
+  echo "Image processing to make datasets is already completed"
+else
+  python3 image_processing.py \
           "${OUTPUT_DIRPATH}/raw_mask" \
           "${OUTPUT_DIRPATH}/title" \
+          "${main_dir}/font/arial.ttf" \
+          "${OUTPUT_DIRPATH}/original.csv" \
           "${OUTPUT_DIRPATH}"
+fi
+
+echo "----------"
