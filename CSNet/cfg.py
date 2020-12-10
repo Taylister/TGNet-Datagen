@@ -34,4 +34,4 @@ train_ckpt_D_path = None
 predict_ckpt_path = 'weight/CSNet_weight.pth'
 predict_data_dir = '/home/miyazonotaiga/デスクトップ/MyResearch/TGNet-Datagen/extract_and_recognize_title_region/result/title'
 predict_result_dir = './'
-gpu = False
+gpu = True

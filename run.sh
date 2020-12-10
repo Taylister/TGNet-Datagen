@@ -37,6 +37,7 @@ else
   python TextDetection.py \
        --trained_model="${CRAFT_DIRPATH}/weight/craft_mlt_25k.pth" \
        --test_folder="${TARGET_DIRPATH}" \
+       --cuda="yes"\
        --output_dir_path="${CRAFT_RESULT_DIRPATH}"
   cd ../../
 
@@ -81,7 +82,8 @@ else
   python3 TextRecognition.py \
           --Transformation TPS --FeatureExtraction ResNet --SequenceModeling BiLSTM --Prediction Attn \
           --book_img_dirpath "${TARGET_DIRPATH}" \
-          --image_folder "${SEGMENTATION_RESULT_DIRPATH}" \
+          --csv_file_name "original.csv" \
+          --image_folder "${OUTPUT_DIRPATH}/title" \
           --output_dirpath "${OUTPUT_DIRPATH}" \
           --sensitive \
           --saved_model "${TEXT_RECOGNITION_DIRPATH}/weight/TPS-ResNet-BiLSTM-Attn-case-sensitive.pth"
@@ -113,7 +115,6 @@ fi
 
 echo "----------"
 
-
 ############################################################################################
 # Generate mask of character region of title part image  
 ############################################################################################
@@ -130,3 +131,37 @@ else
 fi
 
 echo "----------"
+
+############################################################################################
+# Save text information from title part image(processed title part)
+############################################################################################
+
+if [ -e ${OUTPUT_DIRPATH}/processed.csv ]; then
+  echo "Recognized title information is already exist."
+else
+  echo "Start recognizing text in title image "
+  cd extract_and_recognize_title_region/text-recognition
+
+  python3 TextRecognition.py \
+          --Transformation TPS --FeatureExtraction ResNet --SequenceModeling BiLSTM --Prediction Attn \
+          --book_img_dirpath "${TARGET_DIRPATH}" \
+          --csv_file_name "processed.csv" \
+          --image_folder "${OUTPUT_DIRPATH}/extracted_title" \
+          --output_dirpath "${OUTPUT_DIRPATH}" \
+          --sensitive \
+          --saved_model "${TEXT_RECOGNITION_DIRPATH}/weight/TPS-ResNet-BiLSTM-Attn-case-sensitive.pth"
+
+  cd ../../
+
+fi
+
+############################################################################################
+# Save text information from title part image(processed title part)
+############################################################################################
+
+python3 select_data.py \
+        "${OUTPUT_DIRPATH}" \
+        "${OUTPUT_DIRPATH}/original.csv" \
+        "${OUTPUT_DIRPATH}/processed.csv"
+
+        

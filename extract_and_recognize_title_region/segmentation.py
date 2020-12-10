@@ -526,9 +526,9 @@ class Segmentation:
         for i, text_region_img in enumerate(self.text_region_imgs):
             output_filename = '{}_{:02d}.jpg'.format(stem, i)
             # for character recoginition
-            self.saveImage(text_region_img, self.output_for_charRecognition_dirpath, output_filename)
+            #self.saveImage(text_region_img, self.output_for_charRecognition_dirpath, output_filename)
 
-            # for making datase
+            # for making dataset
             output_dirpath = os.path.join(self.output_for_learning_dirpath, "title")
             if not os.path.exists(output_dirpath):
                 os.makedirs(output_dirpath)
@@ -540,7 +540,7 @@ class Segmentation:
             output_filename = '{}_{:02d}.jpg'.format(stem, i)
 
              # for making datase
-            output_dirpath = os.path.join(self.output_for_learning_dirpath, "title_mask")
+            output_dirpath = os.path.join(self.output_for_learning_dirpath, "cover_mask")
             if not os.path.exists(output_dirpath):
                 os.makedirs(output_dirpath)
 
@@ -550,7 +550,7 @@ class Segmentation:
         for i, inpainted_img in enumerate(self.inpainted_imgs):
             output_filename = '{}_{:02d}.jpg'.format(stem, i)
              # for making datase
-            output_dirpath = os.path.join(self.output_for_learning_dirpath, "title_inpaint")
+            output_dirpath = os.path.join(self.output_for_learning_dirpath, "cover_inpaint")
             if not os.path.exists(output_dirpath):
                 os.makedirs(output_dirpath)
 

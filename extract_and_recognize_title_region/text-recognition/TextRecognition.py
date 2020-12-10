@@ -48,7 +48,7 @@ def _textRecognition(opt):
     # predict
     char_list = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
-    csv_filename = os.path.join(opt.output_dirpath,"original.csv")
+    csv_filename = os.path.join(opt.output_dirpath,opt.csv_file_name)
     Header = ["bookID","prediction"]
 
     with open(csv_filename,'w') as f:
@@ -123,7 +123,6 @@ def delete_title_region_and_cover(output_dirpath,img_for_recognition_filepath):
 
     if os.path.isfile(img_for_recognition_filepath):
         paths = os.listdir(output_dirpath)
-        #text_filename = os.path.splitext(os.path.basename(img_filepath))[0] + ".txt"
         filename = os.path.basename(img_for_recognition_filepath)
 
         for path in paths:
@@ -137,7 +136,6 @@ def delete_title_region_and_cover(output_dirpath,img_for_recognition_filepath):
                 continue
     else:
         raise NameError("such file is not exist.")
-
   
 
 
@@ -145,6 +143,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--image_folder', required=True, help='path to image_folder which contains text images')
     parser.add_argument('--book_img_dirpath', required=True, help='path to image_folder which contains target images')
+    parser.add_argument('--csv_file_name', required=True, help='name of the csv file text info saved in')
     parser.add_argument('--workers', type=int, help='number of data loading workers', default=4)
     parser.add_argument('--batch_size', type=int, default=192, help='input batch size')
     parser.add_argument('--saved_model', required=True, help="path to saved_model to evaluation")
