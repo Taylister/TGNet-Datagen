@@ -164,4 +164,14 @@ python3 select_data.py \
         "${OUTPUT_DIRPATH}/original.csv" \
         "${OUTPUT_DIRPATH}/processed.csv"
 
-        
+if [ -e ${OUTPUT_DIRPATH}/dataset ]; then
+  echo "TGNet-Dataset is already exist."
+else
+  echo "Start configurating the data"
+
+  python3 make_dataset.py \
+        "${OUTPUT_DIRPATH}" \
+        "${main_dir}/dataset" \
+
+
+fi
