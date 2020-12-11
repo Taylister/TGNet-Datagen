@@ -10,6 +10,7 @@ from pygame import freetype
 from skimage import io
 from skimage.morphology import skeletonize
 from skimage.transform import resize
+from tqdm import tqdm
 
 import render_standard_text
 
@@ -56,17 +57,26 @@ class ImageProcess:
 
         self.processed_target_list = []
 
+        pbar = tqdm(len(self.target_list),total=len(self.target_list))
+        pbar.set_description("Noise reduction")
         for path in self.target_list:
             img_name = os.path.basename(path)
-            img = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
-            processed_img = cv2.medianBlur(img, kernel_size)
+            img = cv2.imread(path, cv2.IMREAD_COLOR)
+
+            sq_img = self._to_square(img)
             
+            sq_img = cv2.cvtColor(sq_img,cv2.COLOR_BGR2GRAY)
+            processed_img = cv2.medianBlur(sq_img, kernel_size)
             ret, th = cv2.threshold(processed_img, 0, 255, cv2.THRESH_OTSU)
 
             save_path = os.path.join(savedir,img_name)
             self._save_image(save_path,th)
 
             self.processed_target_list.append(save_path)
+
+            pbar.update(1)
+        
+        pbar.close()
     
     def _skeletonize(self):
 
@@ -75,6 +85,8 @@ class ImageProcess:
         if not os.path.exists(savedir):
             os.mkdir(savedir)
 
+        pbar = tqdm(len(self.processed_target_list),total=len(self.processed_target_list))
+        pbar.set_description("Skletonize")
         for path in self.processed_target_list:
             img_name = os.path.basename(path)
 
@@ -92,6 +104,8 @@ class ImageProcess:
 
             save_path = os.path.join(savedir,img_name)
             self._save_image(save_path,output)
+            pbar.update(1)
+        pbar.close()
 
     def _extract_mask_region(self):
 
@@ -104,7 +118,10 @@ class ImageProcess:
         if not os.path.exists(resized_savedir):
             os.mkdir(resized_savedir)
         
+        pbar = tqdm(len(self.processed_target_list),total=len(self.processed_target_list))
+        pbar.set_description("Extract")
         for path in self.processed_target_list:
+
             img_name = os.path.basename(path)
 
             # read processed mask image
@@ -112,19 +129,22 @@ class ImageProcess:
             ret, msk = cv2.threshold(msk, 0, 255, cv2.THRESH_OTSU)
            
             # read original title image and save resized title image
-            h,w = msk.shape[:2]
             title_img_path = os.path.join(self.title_img_dirpath,img_name)
-            resized_title = self._resize_image(h, w, title_img_path)
+            resized_title = self._resize_image(64,title_img_path)
 
             io.imsave(os.path.join(resized_savedir,img_name), resized_title.astype(np.uint8),  check_contrast=False)
 
             # extract title region as backgroud color [128,128,128]
 
-            blend = cv2.imread(os.path.join(resized_savedir,img_name),cv2.IMREAD_COLOR)            
+            blend = cv2.imread(os.path.join(resized_savedir,img_name),cv2.IMREAD_COLOR)
+            blend = self._to_square(blend)        
             blend[msk==0] = [127,127,127]
 
             save_path = os.path.join(mat_savedir,img_name)
             self._save_image(save_path,blend)
+
+            pbar.update(1)
+        pbar.close()
 
     def _gen_text_source(self):
 
@@ -135,27 +155,55 @@ class ImageProcess:
         if not os.path.exists(savedir):
             os.mkdir(savedir)
 
+        pbar = tqdm(len(self.processed_target_list),total=len(self.processed_target_list))
+        pbar.set_description("Generate i_t")
         for path in self.processed_target_list:
             img_name = os.path.basename(path)
             im = cv2.imread(path)
             surf_h, surf_w = im.shape[0],im.shape[1]
             
             text = book_df.query('bookID==@img_name').iloc[0,1]
+            text = str(text)
+
             i_t = render_standard_text.make_standard_text(self.standard_font_path,text,(surf_h,surf_w))
 
             save_path = os.path.join(savedir,img_name)
             self._save_image(save_path,i_t)
+            pbar.update(1)
+        pbar.close()
 
-    def _resize_image(self, h, w, img_path):      
+    def _resize_image(self, rescale_h, img_path):      
         title = io.imread(img_path)
-       
-        to_h = h
-        to_w = w
-
+        h, w = title.shape[:2]
+        scale_ratio = rescale_h / h
+        to_h = rescale_h
+        to_w = int(round(int(w * scale_ratio) / 8)) * 8
+            
         to_scale = (to_h, to_w)
 
         return resize(title, to_scale, preserve_range=True)
             
+    def _to_square(self, img):
+        height, width = img.shape[:2]
+        tmp = img[:, :]
+        if(height > width):
+            size = height
+            limit = width
+        else:
+            size = width
+            limit = height
+
+        start = int((size - limit) / 2)
+        fin = int((size + limit) / 2)
+        sq_img = cv2.resize(np.zeros((1, 1, 3), np.uint8), (size, size))
+            
+        if(size == height):
+            sq_img[:,start:fin]=tmp
+            return sq_img
+        else:
+            sq_img[start:fin,:]=tmp
+            return sq_img
+
     def _save_image(self, save_path, src):
         cv2.imwrite(save_path,src)
 
@@ -164,15 +212,34 @@ class ImageProcess:
         """
         Main function of this class
         """
-        self._noise_reduction()
+        if not os.path.exists(os.path.join(self.output_path,"processed_mask")):
+            self._noise_reduction()
+        else:
+            print("#Reducing noise of the mask image is already done")
+            
+            self.processed_target_list = []
 
-        self._skeletonize()
+            filename_list = os.listdir(os.path.join(self.output_path,"processed_mask"))
+            for filename in filename_list:
+                filepath = os.path.join(self.output_path,"processed_mask",filename)
+                self.processed_target_list.append(filepath)
 
-        self._extract_mask_region()
+        if not os.path.exists(os.path.join(self.output_path,"skeletonize")):
+            self._skeletonize()
+        else:
+            print("#Skeletonization of processed mask image is already done")
 
+        if not os.path.exists(os.path.join(self.output_path,"extracted_title")):
+            self._extract_mask_region()
+        else:
+            print("#Extraction of character region of the title image is already done")
+        
         #self._select_proper_image()
+        if not os.path.exists(os.path.join(self.output_path,"input_text")):
+            self._gen_text_source()
+        else:
+            print("#Generating input text image of TGnet is already done")
 
-        self._gen_text_source()
 
 
 def main(args):

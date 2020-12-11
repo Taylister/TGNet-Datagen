@@ -11,6 +11,8 @@ from skimage import io
 from skimage.morphology import skeletonize
 from skimage.transform import resize
 
+from tqdm import tqdm
+
 from argparse import ArgumentParser
 
 def main(args):
@@ -20,6 +22,8 @@ def main(args):
     
     book_IDs = processed_df["bookID"]
 
+    pbar = tqdm(len(book_IDs),total=len(book_IDs))
+    pbar.set_description("Select proper data for TGNet")
     for book_id in book_IDs:
         rec_text1 = original_df.query('bookID==@book_id').iloc[0,1]
         rec_text2 = processed_df.query('bookID==@book_id').iloc[0,1]
@@ -28,6 +32,10 @@ def main(args):
             #print("book_ID:{}".format(book_id))
             #print("original:{} processed:{}".format(rec_text1,rec_text2))
             delete_images(args.tg_data_dirpath, book_id)
+        
+        pbar.update(1)
+        
+    pbar.close()
 
 def delete_images(dirpath,image_name):
 

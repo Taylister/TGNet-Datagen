@@ -5,7 +5,7 @@ import torch
 import torch.backends.cudnn as cudnn
 import torch.utils.data
 import torch.nn.functional as F
-import tqdm
+from tqdm import tqdm
 
 import csv
 import os
@@ -45,9 +45,6 @@ def _textRecognition(opt):
         num_workers=int(opt.workers),
         collate_fn=AlignCollate_demo, pin_memory=True)
 
-    # predict
-    char_list = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
     csv_filename = os.path.join(opt.output_dirpath,opt.csv_file_name)
     Header = ["bookID","prediction"]
 
@@ -57,6 +54,7 @@ def _textRecognition(opt):
 
         model.eval()
         with torch.no_grad():
+            pbar = tqdm(len(demo_loader),total=len(demo_loader))  
             for image_tensors, image_path_list in demo_loader:
                 batch_size = image_tensors.size(0)
                 image = image_tensors.to(device)
@@ -85,7 +83,7 @@ def _textRecognition(opt):
                 dashed_line = '-' * 80
                 head = f'{"image_path":25s}\t{"predicted_labels":25s}\tconfidence score'
                 
-                print(f'{dashed_line}\n{head}\n{dashed_line}')
+                #print(f'{dashed_line}\n{head}\n{dashed_line}')
 
                 preds_prob = F.softmax(preds, dim=2)
                 preds_max_prob, _ = preds_prob.max(dim=2)
@@ -114,10 +112,14 @@ def _textRecognition(opt):
     
                     # extract the name part of the image
                     filename = os.path.basename(img_name)
-                
-                    print(f'{img_name:25s}\t{pred:25s}\t{confidence_score:0.4f}')
+                    
+                    pbar.set_description("filename:{},pred:{}".format(filename,pred))
+                    #print(f'{img_name:25s}\t{pred:25s}\t{confidence_score:0.4f}')
                     
                     writer.writerow({"bookID":filename,"prediction":pred})
+                
+                pbar.update(1)
+            pbar.close()
 
 def delete_title_region_and_cover(output_dirpath,img_for_recognition_filepath):
 
