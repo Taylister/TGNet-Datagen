@@ -45,6 +45,8 @@ def main(args):
     net_g.eval()
     torch.set_grad_enabled(False)
 
+    pbar = tqdm(len(example_iter),total=len(example_iter))
+    pbar.set_description("Start segmentation of character region")
     for ex_iter, batch in enumerate(example_iter):
         
         if cfg.gpu:
@@ -66,6 +68,8 @@ def main(args):
 
         o_mask = F.to_pil_image(o_mask)
         o_mask.save(os.path.join(savedir, name + '.jpg'))
+        pbar.update(1)
+    pbar.close()
 
 
 if __name__ == "__main__":

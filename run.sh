@@ -10,7 +10,7 @@ echo "setting up dirs ($(date))"
 main_dir=$(pwd)'/'
 echo "This is $main_dir"
 
-TARGET_DIRPATH="${main_dir}/test_"
+TARGET_DIRPATH="${main_dir}/cover"
 
 # each module path
 EXTRACT_AND_RECOGNIZE_TITLE_REGION_DIRPATH="${main_dir}extract_and_recognize_title_region" 
@@ -22,6 +22,7 @@ CSNet_DIRPATH="${main_dir}CSNet"
 SEGMENTATION_RESULT_DIRPATH="${EXTRACT_AND_RECOGNIZE_TITLE_REGION_DIRPATH}/TitleSegmentation"
 CRAFT_RESULT_DIRPATH="${SEGMENTATION_RESULT_DIRPATH}/BoundingBoxInfo"
 
+#OUTPUT_DIRPATH="${main_dir}/tg-data"
 OUTPUT_DIRPATH="${main_dir}/tg-data"
 
 ############################################################################################
@@ -172,6 +173,5 @@ else
   python3 make_dataset.py \
         "${OUTPUT_DIRPATH}" \
         "${main_dir}/dataset" \
-
 
 fi
