@@ -6,3 +6,7 @@
 *.txt
 
 cover
+__pycache__
+.vscode
+CSNet/__pycache__
+extract_and_recognize_title_region/__pycache__
