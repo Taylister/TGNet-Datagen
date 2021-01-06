@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -eu
 
+# Segmentation.py中のself.all_pts_inpainted_imgを保存しない場合は、
+# 全ての文字領域をinpaintされた画像は保存されない
+
 ############################################################################################
 # Setting path
 ############################################################################################
@@ -11,6 +14,7 @@ main_dir=$(pwd)'/'
 echo "This is $main_dir"
 
 TARGET_DIRPATH="${main_dir}/cover"
+#TARGET_DIRPATH="${main_dir}/test_"
 
 # each module path
 EXTRACT_AND_RECOGNIZE_TITLE_REGION_DIRPATH="${main_dir}extract_and_recognize_title_region" 
@@ -22,7 +26,6 @@ CSNet_DIRPATH="${main_dir}CSNet"
 SEGMENTATION_RESULT_DIRPATH="${EXTRACT_AND_RECOGNIZE_TITLE_REGION_DIRPATH}/TitleSegmentation"
 CRAFT_RESULT_DIRPATH="${SEGMENTATION_RESULT_DIRPATH}/BoundingBoxInfo"
 
-#OUTPUT_DIRPATH="${main_dir}/tg-data"
 OUTPUT_DIRPATH="${main_dir}/tg-data"
 
 ############################################################################################
@@ -156,16 +159,16 @@ else
 
 fi
 
-############################################################################################
+###########################################################################################
 # Save text information from title part image(processed title part)
-############################################################################################
+###########################################################################################
 
 python3 select_data.py \
         "${OUTPUT_DIRPATH}" \
         "${OUTPUT_DIRPATH}/original.csv" \
         "${OUTPUT_DIRPATH}/processed.csv"
 
-if [ -e ${OUTPUT_DIRPATH}/dataset ]; then
+if [ -e ${main_dir}/sample_dataset ]; then
   echo "TGNet-Dataset is already exist."
 else
   echo "Start configurating the data"

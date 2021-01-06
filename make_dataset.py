@@ -11,6 +11,8 @@ from skimage import io
 from skimage.morphology import skeletonize
 from skimage.transform import resize
 
+from tqdm import tqdm
+
 from argparse import ArgumentParser
 
 def main(args):
@@ -20,14 +22,17 @@ def main(args):
         os.mkdir(args.deployed_dirpath)
 
     dirs = os.listdir(args.data_dirpath)
-    
+    pbar = tqdm(len(dirs),total=len(dirs))
+    pbar.set_description("Copying dataset..")
     for dir in dirs:
+        pbar.update(1)
         if not (dir in exclude):
             original_path = os.path.join(args.data_dirpath,dir)
             duplicate_path = os.path.join(args.deployed_dirpath,dir)
             shutil.copytree(original_path,duplicate_path)
         else:
             continue
+    pbar.close()
 
 
 

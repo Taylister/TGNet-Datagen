@@ -200,6 +200,7 @@ class Segmentation:
         self.char_img_indices = []
         self.masked_imgs = []
         self.inpainted_imgs = []
+        self.all_mask = []
 
 
 
@@ -243,17 +244,15 @@ class Segmentation:
             self.deleteFlag = True
             return
 
-        
-
         # Store 4 coordinates of the text region bounding boxes
         pts_matrix = self.getTextRegionPointsFromText()
+        pts_matrix2 = pts_matrix
         
         # Noise reduction using filter that is able to preserve the edges of character
         filtered_img = cv2.edgePreservingFilter(self.img)
 
         gray_img = cv2.cvtColor(filtered_img, cv2.COLOR_RGB2GRAY)
-
-
+    
         if (len(pts_matrix) > 0):
             while(len(self.masked_imgs) < 5):
                 # when the detected points less than 5, break the loop.
@@ -269,7 +268,6 @@ class Segmentation:
                     
                 rect = getRectFrom4Points(pts_matrix[key])
                 text_region_img = getRectImage(filtered_img, rect)
-
                 
                 height, width = text_region_img.shape[0],text_region_img.shape[1]
 
@@ -289,7 +287,7 @@ class Segmentation:
 
                 if height * width <= 3000:
                     if len(pts_matrix) == 1:
-                        # delete the image bacause probably the image sould be unsuitable for training
+                        # delete the image bacause the image sould be unsuitable for training
                         if len(text_region_img) == 0:
                             self.deleteFlag = True
                         
@@ -300,8 +298,6 @@ class Segmentation:
                         # so that search next pts
                         pts_matrix = np.delete(pts_matrix,obj=key,axis=0)
                         continue
-
-
                 
                 # Generate mask image for inpainting
                 mask_img = self.genMaskImage(pts_matrix[key])
@@ -311,27 +307,17 @@ class Segmentation:
                 
                 pts_matrix = np.delete(pts_matrix,obj=key,axis=0)
 
-
-                # exception proccecing when the extracted image is too small or large
-                
-                #if height < Segmentation.height_thresh or height > width:
-                #    self.non_text_region_pts.append(pts_matrix[key])
-                #    continue
-
-                #if not isWhiteBackground(text_region_img) and isBlackBackground(text_region_img):
-                #    reversed_text_region_img = text_region_img + 255
-                #    text_region_img = storeBinaryImage(reversed_text_region_img)
-
-                #if isTooWhite(text_region_img) or isNoisy(text_region_img):
-                #    self.non_text_region_pts.append(pts_matrix[key])
-                #    continue
-
         else:
             # the process when text region isn't extracted.
             # generate no masked images(all black image)
             self.deleteFlag = True
-
-
+        
+        if len(self.text_region_imgs) > 0:
+            for coordinates in pts_matrix2:
+                mask = self.genMaskImage(coordinates)
+                self.all_mask.append(mask)
+       
+            self.inpaintingAllMaskeRegions()
 
     def inpaintingAtMaskeRegions(self):
         """
@@ -340,8 +326,17 @@ class Segmentation:
         for masked_img in self.masked_imgs:
             dst = cv2.inpaint(self.img,masked_img,3,cv2.INPAINT_NS)
             self.inpainted_imgs.append(dst)
-            
 
+    def inpaintingAllMaskeRegions(self):
+        """
+        Inpainting input images by extracted text regions
+        """
+        dst = self.img
+        for mask in self.all_mask:
+            dst = cv2.inpaint(dst,mask,3,cv2.INPAINT_NS)
+            
+        self.all_pts_inpainted_img = dst
+            
     def drawTextRegions(self):
         """
         Draw rectangles of text regions.
@@ -352,7 +347,6 @@ class Segmentation:
         for pts in self.non_text_region_pts:
             pts = pts.reshape(4, 1, 2)
             cv2.polylines(self.img, [pts], isClosed=True, color=(255, 0, 0), thickness=2)
-
 
     def storeResizedBoundingRectImage(self, white_bg_bin_img):
         """ Store a resized bounding rect image.
@@ -394,7 +388,6 @@ class Segmentation:
             padded_img = bounding_rect_img
         resized_img = cv2.resize(padded_img, (self.resized_length, self.resized_length))
         return resized_img, [x, y, w, h]
-
 
     def segmentChars(self, labeling=True, cutting_thresh=0.98):
         """
@@ -489,7 +482,6 @@ class Segmentation:
         else:
             return cv2.fillPoly(black_img,[pts],(255))
         
-
     def saveImage(self,img, dirpath,filename):
         """
         Save a image.
@@ -497,17 +489,9 @@ class Segmentation:
         output_filepath = os.path.join(dirpath, filename)
         cv2.imwrite(output_filepath, img)
         
-
     def saveSegmentedImages(self):
         """
         Save 3 kinds of images.
-        1. input image which detected text regions are drawn
-        2. binarized and segmented text region images
-        3. images of characters segmented from binarized text region images
-
-        ↓
-
-        Save 3 kind of images
         1. input image which detected text regions  are drawn
         2. mask image by each text region
         3. inpainted image by each generated mask image
@@ -517,6 +501,7 @@ class Segmentation:
             os.makedirs(self.output_for_charRecognition_dirpath)
 
         filename = os.path.basename(self.img_filepath)
+        print(self.img_filepath)
         stem, ext = os.path.splitext(filename)
 
         #self.saveImage(self.img, filename)
@@ -525,17 +510,12 @@ class Segmentation:
         # all array has only one elements, so unnesessary to name the file
         for i, text_region_img in enumerate(self.text_region_imgs):
             output_filename = '{}_{:02d}.jpg'.format(stem, i)
-            # for character recoginition
-            #self.saveImage(text_region_img, self.output_for_charRecognition_dirpath, output_filename)
-
-            # for making dataset
             output_dirpath = os.path.join(self.output_for_learning_dirpath, "title")
             if not os.path.exists(output_dirpath):
                 os.makedirs(output_dirpath)
 
             self.saveImage(text_region_img, output_dirpath, output_filename)
         
-
         for i, masked_img in enumerate(self.masked_imgs):
             output_filename = '{}_{:02d}.jpg'.format(stem, i)
 
@@ -555,13 +535,18 @@ class Segmentation:
                 os.makedirs(output_dirpath)
 
             self.saveImage(inpainted_img, output_dirpath, output_filename)
+        
+        output_filename = '{}.jpg'.format(stem)
+        output_dirpath = os.path.join(self.output_for_learning_dirpath, "cover_inpaint")
+        if not os.path.exists(output_dirpath):
+            os.makedirs(output_dirpath)
+        self.saveImage(self.all_pts_inpainted_img, output_dirpath, output_filename)
 
 
     def detectAndSegmentChars(self, output_for_learning_dirpath=None,output_for_charRecognition_dirpath=None):
         """
         Main function of Segmentation.
         """
-
         self.deleteFlag = False
 
         #1
