@@ -501,7 +501,6 @@ class Segmentation:
             os.makedirs(self.output_for_charRecognition_dirpath)
 
         filename = os.path.basename(self.img_filepath)
-        print(self.img_filepath)
         stem, ext = os.path.splitext(filename)
 
         #self.saveImage(self.img, filename)

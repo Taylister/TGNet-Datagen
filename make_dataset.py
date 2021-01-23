@@ -4,9 +4,7 @@ import numpy as np
 import pandas as pd
 
 import cv2
-import pygame
 
-from pygame import freetype
 from skimage import io
 from skimage.morphology import skeletonize
 from skimage.transform import resize
