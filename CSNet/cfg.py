@@ -14,7 +14,8 @@ write_log_interval = 100
 
 # data
 batch_size = 8
-data_shape = [64, None]
+data_shape = [128, None]
+#data_shape = [256, None]
 data_dir = 'datasets/csnet_data'
 
 train_data_dir = 'train'

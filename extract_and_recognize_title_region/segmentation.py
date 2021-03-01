@@ -246,6 +246,7 @@ class Segmentation:
 
         # Store 4 coordinates of the text region bounding boxes
         pts_matrix = self.getTextRegionPointsFromText()
+        # To make all inpainted image
         pts_matrix2 = pts_matrix
         
         # Noise reduction using filter that is able to preserve the edges of character
@@ -524,22 +525,35 @@ class Segmentation:
                 os.makedirs(output_dirpath)
 
             self.saveImage(masked_img, output_dirpath, output_filename)
+    
+        for i, pts in enumerate(self.text_region_pts):
+            output_filename = '{}_{:02d}.txt'.format(stem, i)
 
-
-        for i, inpainted_img in enumerate(self.inpainted_imgs):
-            output_filename = '{}_{:02d}.jpg'.format(stem, i)
              # for making datase
-            output_dirpath = os.path.join(self.output_for_learning_dirpath, "cover_inpaint")
+            output_dirpath = os.path.join(self.output_for_learning_dirpath, "text_region")
             if not os.path.exists(output_dirpath):
                 os.makedirs(output_dirpath)
 
-            self.saveImage(inpainted_img, output_dirpath, output_filename)
+            with open(os.path.join(output_dirpath, output_filename), mode="w") as f:
+                for ele in pts:
+                    f.write(str(ele[0])+','+str(ele[1])+'\n')
+
+
+        # for i, inpainted_img in enumerate(self.inpainted_imgs):
+        #     output_filename = '{}_{:02d}.jpg'.format(stem, i)
+        #      # for making datase
+        #     output_dirpath = os.path.join(self.output_for_learning_dirpath, "cover_inpaint")
+        #     if not os.path.exists(output_dirpath):
+        #         os.makedirs(output_dirpath)
+
+        #     self.saveImage(inpainted_img, output_dirpath, output_filename)
         
         output_filename = '{}.jpg'.format(stem)
         output_dirpath = os.path.join(self.output_for_learning_dirpath, "cover_inpaint")
         if not os.path.exists(output_dirpath):
             os.makedirs(output_dirpath)
         self.saveImage(self.all_pts_inpainted_img, output_dirpath, output_filename)
+
 
 
     def detectAndSegmentChars(self, output_for_learning_dirpath=None,output_for_charRecognition_dirpath=None):

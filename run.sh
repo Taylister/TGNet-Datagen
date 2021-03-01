@@ -27,6 +27,7 @@ SEGMENTATION_RESULT_DIRPATH="${EXTRACT_AND_RECOGNIZE_TITLE_REGION_DIRPATH}/Title
 CRAFT_RESULT_DIRPATH="${SEGMENTATION_RESULT_DIRPATH}/BoundingBoxInfo"
 
 OUTPUT_DIRPATH="${main_dir}/tg-data"
+#OUTPUT_DIRPATH="${main_dir}/tg-data_test"
 
 ############################################################################################
 # Extract text region as bounding box
@@ -175,6 +176,6 @@ else
 
   python3 make_dataset.py \
         "${OUTPUT_DIRPATH}" \
-        "${main_dir}/dataset" \
+        "${main_dir}/sample_dataset" \
 
 fi

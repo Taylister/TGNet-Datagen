@@ -160,7 +160,8 @@ class ImageProcess:
         for path in self.processed_target_list:
             img_name = os.path.basename(path)
             im = cv2.imread(path)
-            surf_h, surf_w = im.shape[0],im.shape[1]
+            # surf_h, surf_w = im.shape[0],im.shape[1]
+            surf_h, surf_w = 256,256
             
             text = book_df.query('bookID==@img_name').iloc[0,1]
             text = str(text)

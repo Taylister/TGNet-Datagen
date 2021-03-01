@@ -21,7 +21,6 @@ def main(args):
  
     trfms = To_tensor()
     example_data = Example_dataset(data_dir = args.input_dirpath, transform = trfms)    
-    #example_data = Example_dataset(data_dir = cfg.predict_data_dir, transform = trfms)    
     example_loader = DataLoader(dataset = example_data, batch_size = 1, shuffle = False)
 
 
@@ -93,4 +92,21 @@ if __name__ == "__main__":
         help='path to pretraind model'
     )
     args = parser.parse_args()
+    #python3 predict.py "/home/miyazonotaiga/デスクトップ/MyResearch/TGNet/analysis/proposed/network_output" "/home/miyazonotaiga/デスクトップ/MyResearch/TGNet/analysis/edge_detection" "weight/CSNet_weight.pth"
+    #python3 predict.py "/home/miyazonotaiga/デスクトップ/MyResearch/TGNet/dataset/extracted_title/test" "/home/miyazonotaiga/デスクトップ/MyResearch/TGNet/analysis/proposed/CSNet_out_t" "weight/CSNet_weight.pth"
+    # python3 predict.py "/home/miyazonotaiga/デスクトップ/MyResearch/TGNet/analysis/4(no_skeleton)/network_output" "/home/miyazonotaiga/デスクトップ/MyResearch/TGNet/analysis/4(no_skeleton)/CSNet_out" "weight/CSNet_weight.pth"
+    #python3 predict.py "/home/miyazonotaiga/デスクトップ/MyResearch/TGNet/analysis/training/train_sample/o_t" "/home/miyazonotaiga/デスクトップ/MyResearch/TGNet/analysis/training/train_sample/CSNet_g" "weight/CSNet_weight.pth"
+    #python3 predict.py "/home/miyazonotaiga/デスクトップ/MyResearch/TGNet/analysis/training/train_sample/o_t" "/home/miyazonotaiga/デスクトップ/MyResearch/TGNet/analysis/training/train_sample/CSNet_t" "weight/CSNet_weight.pth"
+    #python3 predict.py "/home/miyazonotaiga/デスクトップ/MyResearch/TGNet/dataset/extracted_title/train" "/home/miyazonotaiga/デスクトップ/MyResearch/TGNet/analysis/training/CSNet_output" "weight/CSNet_weight.pth"
+
+    # python3 predict.py "../../TGNet-analysis/titles/baseline" "../../TGNet-analysis/masks/baseline" "weight/CSNet_weight.pth"
+
+    # python3 predict.py "../../TGNet-analysis/titles/no_style" "../../TGNet-analysis/masks/no_style" "weight/CSNet_weight.pth"
+
+    # python3 predict.py "../../TGNet-analysis/titles/no_discriminator" "../../TGNet-analysis/masks/no_discriminator" "weight/CSNet_weight.pth"
+
+    # python3 predict.py "../../TGNet-analysis/titles/no_VGG" "../../TGNet-analysis/masks/no_VGG" "weight/CSNet_weight.pth"
+    
+    # python3 predict.py "../../TGNet-analysis/titles/no_skeleton" "../../TGNet-analysis/masks/no_skeleton" "weight/CSNet_weight.pth"
+    
     main(args)

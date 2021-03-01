@@ -10,3 +10,7 @@ __pycache__
 .vscode
 CSNet/__pycache__
 extract_and_recognize_title_region/__pycache__
+test_
+run_haraguchi.sh
+render_standard_text.py
+gen_text_source.py
